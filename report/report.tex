@@ -226,9 +226,10 @@ makes predictions more confident. It lowers the mean ALC down to about $\gamma=0
 more common: the share of groups with $B_3>0.3$ goes from 5.2\% at $\gamma=0.5$ to 7.4\% at $\gamma=0.2$. We kept
 $\gamma=0.35$ while the subject has at most three labels, and $\gamma=0.2$ after that, when the posterior knows more.
 
-\paragraph{Formative feedback.} Our seven earlier submissions scored between 0.164 and 0.228 on Codabench. Each
-submission is scored on a new draw of about nine groups, so these numbers move by several hundredths from one draw to
-the next, and we did not use them to rank models.
+\paragraph{Formative feedback.} The final model (submission 1018959) scored 0.182 Brier ALC on Codabench, with an
+ECE of 0.139. Our seven earlier submissions scored between 0.164 and 0.228. Each submission is scored on a new draw
+of eight or nine groups, so these numbers move by several hundredths from one draw to the next, and we did not use
+them to rank models.
 
 \section{What did not help}\label{sec:negative}
 We tested each of these ideas with the same paired simulation and dropped them.
