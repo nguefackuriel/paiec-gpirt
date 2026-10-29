@@ -1,0 +1,2 @@
+intfloat/multilingual-e5-small
+Qwen/Qwen2.5-7B-Instruct

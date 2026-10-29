@@ -1,0 +1,19 @@
+# data, environments and generated artifacts (not distributed)
+data/
+.venv/
+env/
+dist/
+logs/
+__pycache__/
+*.pyc
+.hf_cache/
+# third-party starting kit / baseline (download from the organizers)
+ref_paiec_baseline/
+starting_kit.zip
+# private infrastructure helper (machine-specific)
+scripts/remote.sh
+# LaTeX build files
+report/*.aux
+report/*.log
+report/*.out
+report/build.log
