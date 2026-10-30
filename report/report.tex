@@ -35,10 +35,10 @@ has a Brier ALC of 0.1797. A group mean gets 0.1869 and a constant 0.5 gets 0.25
 A subject is an AI system with fixed settings. An item is one task, with its text, some metadata and an anonymous
 benchmark ID. A group is one subject on one benchmark. In each scored group with at least 80 items, the items are
 split in two halves. Labels are shown from one half and the other half is scored. Labels come in nested steps of 0,
-1, 3, 7, 15 and 31 per group. The predictor sees the labels of every group, also of groups it does not predict. The
-score is the Brier ALC, $0.1B_0+0.2B_1+0.2B_3+0.2B_7+0.2B_{15}+0.1B_{31}$, averaged over groups.
+1, 3, 7, 15 and 31 per group \citep{paiec2026}. The predictor sees the labels of every group, also of groups it does not predict. The
+score is the Brier ALC \citep{brier1950}, $0.1B_0+0.2B_1+0.2B_3+0.2B_7+0.2B_{15}+0.1B_{31}$, averaged over groups.
 
-We use only the public training pool \texttt{aims-foundations/measurement-db} (revision \texttt{54074453}). We keep
+We use only the public training pool \texttt{aims-foundations/measurement-db} \citep{measurementdb2026} (revision \texttt{54074453}). We keep
 benchmarks with binary answers per item and \texttt{release = public}, which gives 160 benchmarks. Of these, 92 have
 at least one group with 80 to 1000 items. This gives 10{,}208 groups, 154{,}628 items and 4.3M subject and item
 cells. Each cell has $n$ trials and $k$ successes. We use no other evaluation data.
@@ -61,7 +61,7 @@ average over groups and then over episodes. We always compare two models on the 
 and the same labels. We report the mean of the paired differences and its standard error. We chose settings on one
 seed and checked them again on episodes drawn with another seed.
 
-\paragraph{What the formative feedback tells us.} Codabench scores each submission on a new draw of about nine
+\paragraph{What the formative feedback tells us.} Codabench \citep{xu2022codabench} scores each submission on a new draw of about nine
 groups. The scoring log gives the Brier score and the calibration error (ECE) of every group at every budget. Since
 the draw changes each time, these logs say little about which model is better. But they do tell us what the test
 groups look like. A draw has about nine groups from seven benchmarks, with 88 to 152 items per group. This is what
@@ -91,12 +91,14 @@ a_s\sim\mathcal{N}(0,\sigma_a^2),\; d\sim\mathcal{GP}(0,\sigma_d^2 K).
 \end{equation}
 Here $c_t$ is a fixed offset from a prior model (Section~\ref{sec:prior}), $m$ is a shift for the benchmark, $a_s$ is
 a shift for the subject, and $d_t$ is the item effect, which is the same for all subjects of the benchmark.
-Section~\ref{sec:shift} describes the prior on $m$. The item kernel is
+This is a logistic item response model \citep{lord1980} with a Gaussian process prior on the item effects
+\citep{rasmussen2006}. Models of this family are also used to evaluate language models on few items
+\citep{maiapolo2024}. Section~\ref{sec:shift} describes the prior on $m$. The item kernel is
 \begin{equation}
 K = (1-\rho_\ell)\big[\rho\,e^{(\cos(e_i,e_j)-1)/\ell} + \rho_f\,\kappa_{\text{tok}}(i,j) + (1-\rho-\rho_f)\,\mathbb{1}[i=j]\big]
   + \rho_\ell\,\frac{\tilde e_i^\top \tilde e_j}{\overline{\|\tilde e\|^2}}.
 \end{equation}
-$e$ is the normalised \texttt{multilingual-e5-small} embedding of the item text and metadata. $\kappa_{\text{tok}}$ is
+$e$ is the normalised \texttt{multilingual-e5-small} \citep{wang2024e5} embedding of the item text and metadata. $\kappa_{\text{tok}}$ is
 the cosine similarity of \texttt{key=value} metadata tokens, where we only count tokens found on at least two labeled
 items. $\tilde e = e-\bar e_{\mathcal{L}}$ is the embedding minus its mean over the labeled items of the benchmark.
 The last term is a Bayesian linear regression of item difficulty on the embedding. It is learned for each benchmark
@@ -106,10 +108,10 @@ from its own labels.
 We find the posterior mode with Newton's method. The Hessian block of the subject effects is diagonal, so we remove
 it with a Schur complement. What is left is a block for $m$ and the labeled item effects. Its size is at most the
 number of distinct labeled items. One Newton step costs $O(|\mathcal{L}| + n_s n_{\mathcal{L}} + n_{\mathcal{L}}^3)$.
-The Laplace posterior gives a mean $\mu$ and a variance $v$ of the logit for any target item, labeled or not, through
+The Laplace posterior \citep[Chapter~3]{rasmussen2006} gives a mean $\mu$ and a variance $v$ of the logit for any target item, labeled or not, through
 the Gaussian process conditional of $d_t$ given $d_{\mathcal{L}}$. We predict
 $\sigma\big(\mu/\sqrt{1+\pi\gamma v/8}\big)$. With $\gamma=1$ this is the usual probit approximation of the
-predictive integral. We use $\gamma=0.35$ while the target subject has at most three labels on the benchmark, and
+predictive integral \citep{mackay1992}. We use $\gamma=0.35$ while the target subject has at most three labels on the benchmark, and
 $\gamma=0.2$ after that. We chose these values in simulation (Section~\ref{sec:risk}). We checked our code against a
 dense Laplace solver, and the two agree to machine precision.
 
@@ -118,7 +120,7 @@ Good prior scales are very different from one benchmark to the next. On some ben
 or always wrong. On others the item effects are small. So we fit the model for every combination of
 $\sigma_a\in\{0.4,0.8,1.6\}$, $\sigma_d\in\{0.8,1.6,3.2\}$ and the three parts of the shift prior below, with
 $\rho=0.73$, $\rho_f=0.17$, $\ell=0.12$ and $\rho_\ell=0.4$. We average the predicted probabilities with weights
-proportional to the Laplace marginal likelihood. We do this for each benchmark and each set of shown labels on its
+proportional to the Laplace marginal likelihood, as in Bayesian model averaging \citep{hoeting1999}. We do this for each benchmark and each set of shown labels on its
 own.
 
 \subsection{Prior on the benchmark shift}\label{sec:shift}
@@ -136,7 +138,7 @@ between zero and the training mean. Two things explain why it does not need to r
 negative mean and already carries part of the low level. And the probit correction pulls predictions toward 0.5.
 
 \subsection{Prior across benchmarks and second model}\label{sec:prior}
-We take hidden states of Qwen2.5-7B-Instruct (layer 21 of 28, mean over tokens, standardised) and fit a ridge
+We take hidden states of Qwen2.5-7B-Instruct \citep{qwen2024} (layer 21 of 28, mean over tokens, standardised) and fit a ridge
 regression to the mean logit accuracy of each item, with equal weight for all training benchmarks. The output is
 $z_t$, and we set $c_t = 0.3\,z_t$. With no labels the prediction is the prior predictive, averaged over the parts of
 the shift prior. The final predictor is the average of two copies of the model. They differ only in the item vectors
@@ -234,7 +236,7 @@ them to rank models.
 \section{What did not help}\label{sec:negative}
 We tested each of these ideas with the same paired simulation and dropped them.
 \begin{itemize}\itemsep0pt
-\item Predicting budget 0 from item text and subject attributes with LightGBM (e5 embeddings, text statistics,
+\item Predicting budget 0 from item text and subject attributes with LightGBM \citep{ke2017lightgbm} (e5 embeddings, text statistics,
 provider, release date, size, model name). The best $B_0$ was 0.248, against 0.250. Once the shift prior is centred,
 the model already reaches the $B_0$ of the Bayes reference (0.2356).
 \item Asking Qwen2.5-7B to rate item difficulty from 1 to 9. Inside a benchmark, the rank correlation with measured
@@ -246,7 +248,7 @@ groups. It was worse on held-out benchmarks. A learned low-rank metric for the l
 \item Bigger item vectors (e5-base, e5-large, Qwen2.5-7B layers 14, 21 or 28) as the only kernel input. None beat
 e5-small. With so few labels, the model is limited by the number of labels more than by the quality of the vectors.
 Using Qwen2.5-14B instead of the 7B model gained 0.0002 ALC and needed twice the memory.
-\item Stacking with LightGBM on model outputs and label counts, and Platt scaling per budget. Both were worse on
+\item Stacking with LightGBM on model outputs and label counts, and Platt scaling \citep{platt2000} per budget. Both were worse on
 held-out benchmarks, because calibration learned on some benchmarks does not carry over to others.
 \item Other ways to choose labels: uncertainty, overlap with other subjects, embedding diversity, D-optimal design.
 None was clearly different from random order.
@@ -287,5 +289,10 @@ cores for the simulations. One setting of 1000 episodes takes 10 to 20 minutes i
 
 \paragraph{Use of AI assistants.} We wrote the code, ran the experiments and drafted this report with help from an
 LLM coding assistant (Claude Code, Anthropic). All results come from the code in the repository.
+
+{\small
+\bibliographystyle{plainnat}
+\bibliography{references}
+}
 
 \end{document}

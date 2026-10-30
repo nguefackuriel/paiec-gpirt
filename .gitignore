@@ -17,3 +17,5 @@ report/*.aux
 report/*.log
 report/*.out
 report/build.log
+report/*.bbl
+report/*.blg
